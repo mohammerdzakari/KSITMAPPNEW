@@ -1,0 +1,8 @@
+{
+  "name": "KSITM Super App",
+  "description": "The unified mobile platform for Katsina State Institute of Technology & Management, featuring Student Portal, LMS, AI Tutor, Innovation Hub, and Social Community.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
