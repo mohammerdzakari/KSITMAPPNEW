@@ -10,7 +10,6 @@ import Logo from '../components/Logo';
 
 interface Props {
   portal: Portal;
-  staffCode?: string;
   onBack: () => void;
 }
 
@@ -30,7 +29,7 @@ const initialForm = {
   isHOD: false,
 };
 
-export const AuthView = ({ portal, staffCode, onBack }: Props) => {
+export const AuthView = ({ portal, onBack }: Props) => {
   const { login, register } = useAuth();
   const [step, setStep] = useState(1);
   const [isRegistering, setIsRegistering] = useState(true);
@@ -132,7 +131,6 @@ export const AuthView = ({ portal, staffCode, onBack }: Props) => {
         username: portal === 'student' ? form.username : undefined,
         dateOfBirth: portal === 'student' ? form.dateOfBirth : undefined,
         staffId: portal === 'staff' ? form.staffId.trim() : undefined,
-        accessCode: portal === 'staff' ? staffCode : undefined,
         isHOD: portal === 'staff' ? form.isHOD : undefined,
       });
     } catch (err) {
@@ -257,10 +255,6 @@ export const AuthView = ({ portal, staffCode, onBack }: Props) => {
         <p className="text-center text-blue-200 text-sm mb-8">
           {isRegistering ? 'Enter your details to get started' : 'Sign in to access your dashboard'}
         </p>
-
-        {portal === 'staff' && staffCode && isRegistering && (
-          <p className="text-center text-[11px] text-green-400 mb-4">✓ Staff access code verified</p>
-        )}
 
         <form onSubmit={isRegistering ? handleRegisterStep1 : handleLogin} className="space-y-4">
           {isRegistering && (

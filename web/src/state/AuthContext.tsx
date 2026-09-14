@@ -16,7 +16,6 @@ interface RegisterPayload {
   username?: string;
   dateOfBirth?: string;
   staffId?: string;
-  accessCode?: string;
   isHOD?: boolean;
 }
 

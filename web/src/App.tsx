@@ -27,7 +27,6 @@ export const App = () => {
   const { status, user, refresh } = useAuth();
   const [portal, setPortal] = useState<'student' | 'staff' | null>(null);
   const [authStep, setAuthStep] = useState<'select' | 'form'>('select');
-  const [accessCode, setAccessCode] = useState('');
   const [route, setRoute] = useState(() => window.location.hash.replace('#', '') || '/home');
 
   const [isDarkMode, setIsDarkMode] = useState(readTheme);
@@ -66,7 +65,6 @@ export const App = () => {
   useEffect(() => {
     if (status === 'unauthenticated') {
       setAuthStep('select');
-      setAccessCode('');
       setSearchOpen(false);
       setMessagesOpen(false);
       setNotificationsOpen(false);
@@ -105,20 +103,15 @@ export const App = () => {
   if (!user) {
     return authStep === 'select' ? (
       <RoleSelectionView
-        onSelectRole={(selection, code) => {
+        onSelectRole={(selection) => {
           setPortal(selection);
-          setAccessCode(code ?? '');
           setAuthStep('form');
         }}
       />
     ) : (
       <AuthView
         portal={portal ?? 'student'}
-        staffCode={accessCode}
-        onBack={() => {
-          setAuthStep('select');
-          setAccessCode('');
-        }}
+        onBack={() => setAuthStep('select')}
       />
     );
   }

@@ -63,7 +63,6 @@ const registerSchema = z.object({
   dateOfBirth: z.string().optional(),
   // Staff only
   staffId: z.string().trim().max(40).optional(),
-  accessCode: z.string().trim().max(60).optional(),
   isHOD: z.boolean().optional(),
 });
 
@@ -179,12 +178,10 @@ authRouter.post(
       });
     } else {
       if (!body.staffId) throw badRequest('Staff ID is required.');
-      if (!config.staffAccessCode) {
-        throw forbidden('Staff registration is disabled on this server (STAFF_ACCESS_CODE is not set).');
-      }
-      if (body.accessCode !== config.staffAccessCode) {
-        throw forbidden('Invalid staff access code.');
-      }
+      // No shared access code: staff self-register as lecturers with a
+      // department-scoped institutional email. Elevated rights are never
+      // granted here — an HOD request goes through the moderation queue and
+      // an administrator can deactivate any account.
       const department = body.departmentId || body.department
         ? await resolveDepartment(body.departmentId, body.department)
         : null;
@@ -305,17 +302,6 @@ authRouter.post('/logout', async (req, res) => {
 authRouter.get('/me', requireAuth, async (req, res) => {
   res.json(await mePayload(req.currentUser!.id));
 });
-
-authRouter.post(
-  '/verify-access-code',
-  rateLimit({ windowMs: 10 * 60 * 1000, max: 15, key: 'access-code' }),
-  async (req, res) => {
-    const { code } = parse(z.object({ code: z.string().trim().min(3).max(60) }), req.body);
-    if (!config.staffAccessCode) throw forbidden('Staff registration is disabled on this server.');
-    if (code !== config.staffAccessCode) throw forbidden('Access Denied. That staff code is not valid.');
-    res.json({ ok: true });
-  },
-);
 
 /** Real username availability check (replaces the hardcoded list). */
 authRouter.get('/username-available', async (req, res) => {

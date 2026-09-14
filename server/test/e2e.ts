@@ -169,7 +169,6 @@ async function main(): Promise<void> {
       PORT: String(PORT),
       PGDATA_DIR: dataDir,
       SESSION_SECRET: 'e2e-secret',
-      STAFF_ACCESS_CODE: 'STF-KSITM-E2E',
       ADMIN_EMAIL: 'admin@ksitm.edu.ng',
       ADMIN_PASSWORD: 'KsitmAdmin123!',
       GEMINI_API_KEY: 'test-key',
@@ -267,26 +266,16 @@ async function runScenarios(): Promise<void> {
   });
   expectStatus('non-institutional email rejected', badDomain, 400);
 
-  const noCode = await lecturer.post('/api/auth/register', {
+  // Staff registration needs no shared access code — only a staff ID and an
+  // institutional email. Privilege escalation is still impossible (see below).
+  const noStaffId = await lecturer.post('/api/auth/register', {
     portal: 'staff',
     email: 'lec@ksitm.edu.ng',
     password: PASSWORD,
     firstName: 'Ibrahim',
     lastName: 'Musa',
-    staffId: 'KSITM/STAFF/100',
   });
-  expectStatus('staff registration without access code rejected', noCode, 403);
-
-  const wrongCode = await lecturer.post('/api/auth/register', {
-    portal: 'staff',
-    email: 'lec@ksitm.edu.ng',
-    password: PASSWORD,
-    firstName: 'Ibrahim',
-    lastName: 'Musa',
-    staffId: 'KSITM/STAFF/100',
-    accessCode: 'WRONG',
-  });
-  expectStatus('staff registration with wrong code rejected', wrongCode, 403);
+  expectStatus('staff registration without a staff ID rejected', noStaffId, 400);
 
   const regLecturer = await lecturer.post('/api/auth/register', {
     portal: 'staff',
@@ -296,10 +285,9 @@ async function runScenarios(): Promise<void> {
     lastName: 'Musa',
     staffId: 'KSITM/STAFF/100',
     departmentId: csDept.id,
-    accessCode: 'STF-KSITM-E2E',
     avatar: `data:image/png;base64,${tinyPng}`,
   });
-  expectStatus('lecturer registration succeeds', regLecturer, 201);
+  expectStatus('lecturer registration succeeds without any access code', regLecturer, 201);
   eq('lecturer role is lecturer', regLecturer.data.user.role, 'lecturer');
   check('avatar was stored and served', String(regLecturer.data.user.avatarUrl).startsWith('/api/files/'));
 
@@ -311,7 +299,6 @@ async function runScenarios(): Promise<void> {
     lastName: 'Kano',
     staffId: 'KSITM/STAFF/001',
     departmentId: csDept.id,
-    accessCode: 'STF-KSITM-E2E',
     isHOD: true,
   });
   expectStatus('HOD registration succeeds', regHod, 201);
@@ -383,7 +370,6 @@ async function runScenarios(): Promise<void> {
     lastName: 'Ibrahim',
     staffId: 'KSITM/STAFF/200',
     departmentId: eeDept.id,
-    accessCode: 'STF-KSITM-E2E',
   });
   expectStatus('other-department lecturer registration succeeds', regOther, 201);
 

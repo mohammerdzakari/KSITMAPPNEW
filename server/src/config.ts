@@ -79,7 +79,6 @@ export const config = {
   cookieSecure: bool('COOKIE_SECURE', isProduction),
   cookieDomain: process.env.COOKIE_DOMAIN || '',
   publicDir: str('PUBLIC_DIR', path.join(REPO_ROOT, 'web', 'dist')),
-  staffAccessCode: process.env.STAFF_ACCESS_CODE || '',
   adminEmail: process.env.ADMIN_EMAIL || '',
   adminPassword: process.env.ADMIN_PASSWORD || '',
   allowedEmailDomains: str('ALLOWED_EMAIL_DOMAINS', 'ksitm.edu.ng')

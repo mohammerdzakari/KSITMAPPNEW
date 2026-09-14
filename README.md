@@ -122,7 +122,6 @@ annotated list. The important ones:
 | --- | --- | --- |
 | `SESSION_SECRET` | **production** | Signs/identifies sessions; the server refuses to boot without it in production |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | **production** | Bootstrap administrator |
-| `STAFF_ACCESS_CODE` | **production** | Shared code that unlocks staff registration (verified server-side) |
 | `DATABASE_URL` | recommended | Managed PostgreSQL; omit to use embedded PostgreSQL |
 | `PGDATA_DIR` | no | Data directory for embedded PostgreSQL (default `server/.pgdata`) |
 | `GEMINI_API_KEY` | no | Enables the AI tutor |
@@ -141,7 +140,7 @@ annotated list. The important ones:
 npm ci
 npm run build
 NODE_ENV=production SESSION_SECRET=… ADMIN_EMAIL=… ADMIN_PASSWORD=… \
-STAFF_ACCESS_CODE=… DATABASE_URL=postgres://… npm start
+DATABASE_URL=postgres://… npm start
 ```
 
 The process serves `/api/*` and the SPA from one port — point your reverse proxy at it and
@@ -153,7 +152,7 @@ terminate TLS in front. Migrations run automatically at boot.
 docker build -t ksitm-app .
 docker run -p 4000:4000 \
   -e NODE_ENV=production -e SESSION_SECRET=… -e ADMIN_EMAIL=… -e ADMIN_PASSWORD=… \
-  -e STAFF_ACCESS_CODE=… -e DATABASE_URL=postgres://… ksitm-app
+  -e DATABASE_URL=postgres://… ksitm-app
 ```
 
 The image builds the SPA and the API, then runs `node server/dist/index.js` as a non-root user.
@@ -197,7 +196,7 @@ Everything below was hard-coded in the original export and is now backed by the 
 | `MOCK_ALL_STUDENTS` (fabricated CGPA) | Real enrolments; **CGPA computed** from `course_results` (Σ points×units ÷ Σ units) |
 | Fabricated streak / next class | Streak from consecutive UTC days in `attendance_records`; next class from `course_schedules` |
 | `MOCK_COURSES`, `MOCK_ANNOUNCEMENTS`, `MOCK_POSTS`, `MOCK_PROJECTS`, `MOCK_COMMUNITIES`, `MOCK_STUDY_ROOMS`, `MOCK_CHATS`, `MOCK_MESSAGES`, `MOCK_ASSIGNMENTS`, `MOCK_SUBMISSIONS`, `MOCK_PENDING_CONTENT` | Real tables with CRUD, pagination-free but scoped queries, live counters |
-| `ADMIN_VERIFICATION_CODE = 'STF-KSITM-2025'` in client code | `STAFF_ACCESS_CODE` verified by `POST /api/auth/verify-access-code` |
+| `ADMIN_VERIFICATION_CODE = 'STF-KSITM-2025'` hardcoded in the client bundle | Removed. Staff register with an institutional email plus their staff ID and start as `lecturer`; HOD rights are granted only through the moderation queue, and an admin can deactivate any account |
 | Fake auth (`setTimeout` e-mail "verification", login ignored the password, `isHOD = email.includes('hod')`) | bcrypt + DB sessions + role column + moderated HOD promotion |
 | Attendance `alert('Attendance Marked!')` | QR generated per session, scanned with `jsqr`, `POST /api/attendance/mark` with duplicate/expiry checks |
 | Static QR image + `api.qrserver.com` | Server-rendered PNG (`/api/auth/id-card.png`, `/api/attendance/sessions/:id/qr.png`) |
@@ -255,6 +254,7 @@ Current results in this repository:
    institute wants verified addresses.
 6. **Study-room whiteboards are per-device.** Boards are not broadcast over WebSockets; the room
    membership, chat and lifecycle are real.
-7. **Production prerequisites:** `SESSION_SECRET`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`,
-   `STAFF_ACCESS_CODE`, a managed `DATABASE_URL`, HTTPS in front of the app, and a backup policy
-   for the database.
+7. **Production prerequisites:** `SESSION_SECRET`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, a managed
+   `DATABASE_URL`, HTTPS in front of the app, and a backup policy for the database. Staff
+   registration is open to anyone with an institutional email, so if that is too permissive for
+   the institute, gate it behind SSO or an allow-list of staff addresses.
