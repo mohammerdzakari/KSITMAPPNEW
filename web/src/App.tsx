@@ -24,7 +24,7 @@ const THEME_KEY = 'ksitm.theme';
 const readTheme = () => (typeof localStorage !== 'undefined' && localStorage.getItem(THEME_KEY) === 'dark') || false;
 
 export const App = () => {
-  const { status, user, refresh } = useAuth();
+  const { status, user, refresh, sessionSource } = useAuth();
   const [portal, setPortal] = useState<'student' | 'staff' | null>(null);
   const [authStep, setAuthStep] = useState<'select' | 'form'>('select');
   const [route, setRoute] = useState(() => window.location.hash.replace('#', '') || '/home');
@@ -75,13 +75,23 @@ export const App = () => {
   // Keep the URL in sync with the role landing page once we know who is signed in.
   useEffect(() => {
     if (!user) return;
+    if (sessionSource === 'fresh') {
+      // This tab just signed in or signed up — always land on the role home
+      // page, even if a stale hash (from a previous session or navigation)
+      // is still in the URL.
+      window.location.hash = landing;
+      setRoute(landing);
+      return;
+    }
+    // Session restored on page load: keep the deep link the user reloaded
+    // from; only normalise an empty/root URL.
     const path = window.location.hash.replace('#', '');
-    if (!path || path === '/' || path === '/home') {
+    if (!path || path === '/') {
       window.location.hash = landing;
       setRoute(landing);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, landing]);
+  }, [user?.id, sessionSource, landing]);
 
   const currentTab = route.startsWith('/course/') ? 'LMS' : `/${route.split('/')[1] || 'home'}`;
 
