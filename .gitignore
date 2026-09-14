@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local environment & data
+.env
+.env.local
+.env.*.local
+server/.pgdata/
+.pgdata/
+*.sqlite
+
+# Vite / server build output
+web/dist/
+server/dist/

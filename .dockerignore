@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.git
+.github
+.env
+.env.*
+!.env.example
+web/dist
+server/dist
+server/.pgdata
+.pgdata
+*.log
+.DS_Store
+.vscode
+.idea
